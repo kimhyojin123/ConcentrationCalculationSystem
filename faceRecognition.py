@@ -1,12 +1,18 @@
 import cv2
 import tkinter.messagebox as msgbox
+import DBConnect.dbManage
 from tkinter import *
 from gaze_tracking import GazeTracking
 # import numpy as np
 
 # xml='C:/Users/XNOTE/Downloads/opencv/sources/data/haarcascades/haarcascade_frontalface_default.xml'
 # face_cascade=cv2.CascadeClassifier(xml)
-
+db_controller=DBConnect.dbManage.MysqlController('127.0.0.1','root', 'dPdms7942','concentration', 3300)
+studentNumber=201811218
+studentName='김효진'
+totalPoint=70
+minusPoint=0
+db_controller.insert_user(studentNumber,studentName)
 gaze=GazeTracking()
 webcam=cv2.VideoCapture(0)
 cnt=0
@@ -37,8 +43,10 @@ while True:
     left_pupil = gaze.pupil_left_coords()
     right_pupil = gaze.pupil_right_coords()
     if(left_pupil==None and right_pupil==None):
-        if cnt==10:
-            msgbox.showwarning("경고","얼굴인식이 되지 않습니다.\n 카메라에 제대로 얼굴을 보여주세요.")
+        if cnt==30:
+            minusPoint+=1;
+            db_controller.update_outOfPosition(studentNumber,minusPoint,totalPoint-(5*minusPoint))
+            msgbox.showwarning("경고","얼굴인식이 되지 않습니다.\n")
             cnt=0
         else :
             cnt+=1;    
