@@ -6,15 +6,14 @@ from tkinter import *
 from tkinter import messagebox
 import pandas as pd
 import ctypes
-import random
+# import asyncio #비동기
+import threading
+
 
 def closebox():
     window.destroy()
     facing = True
-
-def closeRbox():
-    Rwindow.destroy()
-    RFlag = True
+    # window.quit()
 
 # xml 경로 바꿨음
 xml='C:/python_opencv/haarcascades/haarcascade_frontalface_default.xml'
@@ -36,27 +35,17 @@ def createWindow():
 
     return window;
 
-def createRandomWindow():
-    Rwindow = Tk()
-    Rwindow.title("경고")
-    Rwindow.geometry("400x100-320+240")
-    Rlabel = tkinter.Label(Rwindow, text = "\n집중도 확인메시지입니다.\n확인을 눌러주세요")
-    Rlabel.pack()
-    Rbtn1 = Button(Rwindow, text = "확인", command=closeRbox)
-    Rbtn1.pack(side='bottom')
-
-    return Rwindow;
-
-count = 0
+count = 0;
 checkTime = time.time()
 now = time.time()
 facing = True
-RFlag = True #랜덤플래그
 window = createWindow()
-Rwindow = createRandomWindow()
-concentrate = 70
-checkRandomTime = time.time()
-Rnum = 0
+# def Arlet(window):
+#     window.mainloop()
+#     window.createWindow()
+
+t1 = window.mainloop()
+
 
 while(True):
     # print(facing);
@@ -64,11 +53,6 @@ while(True):
     ret,frame=cap.read()
     frame=cv2.flip(frame,1)
     gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-
-    if(RFlag == True):
-        checkRandomTime = time.time()
-        Rnum = random.randrange(2, 5)
-        RFlag=False
 
     faces=face_cascade.detectMultiScale(gray,1.05,5)
     body=body_cascade.detectMultiScale(gray,1.05,5)
@@ -93,18 +77,14 @@ while(True):
         facing = False
         checkTime = time.time()
     
-    if((now-checkTime) > 5 and not facing):
+    if((now-checkTime) > 15 and not facing):
         # loop.run_until_complete(ATest())
         # loop.close
         count += 1
-        window.mainloop()
+        t1.start()
+        # window.mainloop()
         window = createWindow()
-
-    if((now-checkRandomTime) > Rnum and (concentrate < 60) and not RFlag):
-        checkRandomTime = time.time()
-        Rwindow.mainloop()
-        Rwindow = createRandomWindow()
-
+        # t1.join()
 
     k=cv2.waitKey(30)&0xff
     if k==27:

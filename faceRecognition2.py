@@ -6,15 +6,27 @@ from tkinter import *
 from tkinter import messagebox
 import pandas as pd
 import ctypes
-import random
+import arletTest2 as arletT
 
-def closebox():
-    window.destroy()
-    facing = True
+# if __name__ == "__main__":
+    
+# else:
+#     from .arletTest2 import *
 
-def closeRbox():
-    Rwindow.destroy()
-    RFlag = True
+# def closebox():
+#     window.destroy()
+#     facing = True
+#     # window.quit()
+
+# async def ATest():
+    
+#     window.mainloop()
+#     window = createWindow()
+
+#이벤트 루프를 생성
+# loop = asyncio.get_event_loop()
+
+    
 
 # xml 경로 바꿨음
 xml='C:/python_opencv/haarcascades/haarcascade_frontalface_default.xml'
@@ -25,38 +37,12 @@ body_cascade=cv2.CascadeClassifier(bodyxml)
 cap=cv2.VideoCapture(0)
 cap.set(3,640)
 cap.set(4,480)
-def createWindow():
-    window = Tk()
-    window.title("경고")
-    window.geometry("400x100-320+240")
-    label = tkinter.Label(window, text = "\n자리벗어남 감지\n자리로 돌아와\n확인을 눌러주세요")
-    label.pack()
-    btn1 = Button(window, text = "확인", command=closebox)
-    btn1.pack(side='bottom')
 
-    return window;
-
-def createRandomWindow():
-    Rwindow = Tk()
-    Rwindow.title("경고")
-    Rwindow.geometry("400x100-320+240")
-    Rlabel = tkinter.Label(Rwindow, text = "\n집중도 확인메시지입니다.\n확인을 눌러주세요")
-    Rlabel.pack()
-    Rbtn1 = Button(Rwindow, text = "확인", command=closeRbox)
-    Rbtn1.pack(side='bottom')
-
-    return Rwindow;
-
-count = 0
+count = 0;
 checkTime = time.time()
 now = time.time()
 facing = True
-RFlag = True #랜덤플래그
-window = createWindow()
-Rwindow = createRandomWindow()
-concentrate = 70
-checkRandomTime = time.time()
-Rnum = 0
+window = arletT.createWindow()
 
 while(True):
     # print(facing);
@@ -64,11 +50,6 @@ while(True):
     ret,frame=cap.read()
     frame=cv2.flip(frame,1)
     gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-
-    if(RFlag == True):
-        checkRandomTime = time.time()
-        Rnum = random.randrange(2, 5)
-        RFlag=False
 
     faces=face_cascade.detectMultiScale(gray,1.05,5)
     body=body_cascade.detectMultiScale(gray,1.05,5)
@@ -98,13 +79,8 @@ while(True):
         # loop.close
         count += 1
         window.mainloop()
-        window = createWindow()
-
-    if((now-checkRandomTime) > Rnum and (concentrate < 60) and not RFlag):
-        checkRandomTime = time.time()
-        Rwindow.mainloop()
-        Rwindow = createRandomWindow()
-
+        facing = TRUE
+        window = arletT.createWindow()
 
     k=cv2.waitKey(30)&0xff
     if k==27:
