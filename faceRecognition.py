@@ -1,3 +1,4 @@
+import tkinter
 import cv2
 import tkinter.messagebox as msgbox
 import DBConnect.dbManage
@@ -104,9 +105,3 @@ while True:
     #     cv2.line(roi,(0,y+int(h/2)),(cols,y+int(h/2)),(0,255,0),2)
     #     break
 
-    # cv2.imshow("Threshold",threshold)
-    # cv2.imshow("gray roi",gray_roi)
-    # cv2.imshow("Roi",roi)
-    # key=cv2.waitKey(30)
-    # if key==27:
-    #     break
