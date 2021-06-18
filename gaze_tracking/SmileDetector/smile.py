@@ -3,8 +3,8 @@
 import cv2 
 
 # Face and Smile classifiers
-face_detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-smile_detector = cv2.CascadeClassifier('haarcascade_smile.xml')
+face_detector = cv2.CascadeClassifier('C:/Users/XNOTE/Downloads/opencv/sources/data/haarcascades/haarcascade_frontalface_default.xml')
+smile_detector = cv2.CascadeClassifier('C:/Users/XNOTE/Downloads/opencv/sources/data/haarcascades/haarcascade_smile.xml')
 
 # Grab Webcam feed
 webcam = cv2.VideoCapture(0)

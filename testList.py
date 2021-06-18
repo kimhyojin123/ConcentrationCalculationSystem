@@ -10,6 +10,7 @@ from tkinter import messagebox
 import pandas as pd
 import ctypes
 import random
+from threading import Thread
 
 def closebox():
     window.destroy()
@@ -18,6 +19,10 @@ def closebox():
 def closeRbox():
     Rwindow.destroy()
     RFlag = True
+
+def closePupilbox():
+    Pupilwindow.destroy()
+    PupilFlag = False
 
 xml='C:/Users/XNOTE/Downloads/opencv/sources/data/haarcascades/haarcascade_frontalface_default.xml'
 bodyxml='C:/Users/XNOTE/Downloads/opencv/sources/data/haarcascades/haarcascade_upperbody.xml'
@@ -48,6 +53,7 @@ def createWindow():
 
     return window;
 
+
 def createRandomWindow():
     Rwindow = Tk()
     Rwindow.title("경고")
@@ -59,20 +65,37 @@ def createRandomWindow():
 
     return Rwindow;
 
+def createPupilWindow():
+    Pupilwindow = Tk()
+    Pupilwindow.title("경고")
+    Pupilwindow.geometry("400x100-320+240")
+    label = tkinter.Label(Pupilwindow, text = "\n시선이 제대로 인식되지 않습니다.\n확인을 누르고 카메라에 얼굴을 제대로 보여주세요.")
+    label.pack()
+    btn1 = Button(Pupilwindow, text = "확인", command=closePupilbox)
+    btn1.pack(side='bottom')
+
+    return Pupilwindow;
+
 positionPoint = 0 
 smilePoint=0
 checkTime = time.time()
 now = time.time()
 facing = True
 RFlag = True #랜덤플래그
+PupilFlag = False
 window = createWindow()
 Rwindow = createRandomWindow()
+Pupilwindow = createPupilWindow()
 checkRandomTime = time.time()
+checkSmileTime = time.time()
 Rnum = 0
+
+
+# t1 = Thread(target = window.mainloop())
+# t2 = Thread(target = Rwindow.mainloop())
 
 while True:
     # We get a new frame from the webcam
-    now = time.time()
     _, frame = webcam.read()
     frame=cv2.flip(frame,1)
     gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
@@ -89,9 +112,8 @@ while True:
     smile = smile_detector.detectMultiScale(gray, 1.8,20)
         # Label the face as smiling 
 
-    # if len(smile) > 0:
-    #     cv2.putText(frame, 'Smiling', (x,y+h+40), fontScale=3,
-    #     fontFace=cv2.FONT_HERSHEY_PLAIN, color=(255,255,255))
+    now = time.time()
+
     if len(faces):
         facing = True
         checkTime = time.time()
@@ -100,7 +122,9 @@ while True:
         if len(smile) > 0:
             cv2.putText(frame, 'Smiling', (x,y+h+40), fontScale=3,
             fontFace=cv2.FONT_HERSHEY_PLAIN, color=(255,255,255))
-            smilePoint += 1
+            if((now-checkSmileTime) >30):
+                checkSmileTime = time.time()
+                smilePoint += 1
             db_controller.update_laughDetection(studentNumber,smilePoint,totalPoint-(5*smilePoint))
     
     if len(body):
@@ -113,11 +137,13 @@ while True:
     if((now-checkTime) > 5 and not facing):
         positionPoint += 1
         db_controller.update_outOfPosition(studentNumber,positionPoint,totalPoint-(10*positionPoint))
+        # t1.start()
         window.mainloop()
         window = createWindow()
 
     if((now-checkRandomTime) > Rnum and (totalPoint < 60) and not RFlag):
         checkRandomTime = time.time()
+        # t2.start()
         Rwindow.mainloop()
         Rwindow = createRandomWindow()
 
@@ -137,11 +163,13 @@ while True:
 
     left_pupil = gaze.pupil_left_coords()
     right_pupil = gaze.pupil_right_coords()
-    if(left_pupil==None and right_pupil==None):
-        if cnt==30:
+    if(left_pupil==None and right_pupil==None and not PupilFlag):
+        if cnt==10:
+            PupilFlag = True
             sightPoint+=1;
             db_controller.update_outOfSight(studentNumber,sightPoint,totalPoint-(5*sightPoint))
-            msgbox.showwarning("경고","얼굴인식이 되지 않습니다.\n")
+            Pupilwindow.mainloop()
+            Pupilwindow = createPupilWindow()
             cnt=0
         else :
             cnt+=1;    
@@ -152,48 +180,8 @@ while True:
     cv2.imshow("Demo", frame)
 
     if cv2.waitKey(1) == 27:
+        db_controller.select_all_to_excel()
         break
 
 webcam.release()
 cv2.destroyAllWindows() 
-
-
-# ret,frame=cap.read()
-    # frame=cv2.flip(frame,1)
-    # gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-
-    # faces=face_cascade.detectMultiScale(gray,1.05,5)
-    # print("Number of faces detected: "+str(len(faces)))
-
-    # if len(faces):
-    #     for(x,y,w,h) in faces:
-    #         cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
-    
-    # cv2.imshow('result',frame)
-    
-    # k=cv2.waitKey(30)&0xff
-    # if k==27:
-    #     break 
-
-
-
-    # ret,frame=cap.read()
-    # if ret is False:
-    #     break
-    # frame=cv2.flip(frame,1)
-    # roi=frame[0:4480,0:3640]
-    # rows,cols,_=roi.shape
-
-    # gray_roi=cv2.cvtColor(roi,cv2.COLOR_BGR2GRAY)
-    # gray_roi=cv2.GaussianBlur(gray_roi,(7,7),0)
-
-    # _, threshold=cv2.threshold(gray_roi,3,255,cv2.THRESH_BINARY_INV)
-    # contours, _=cv2.findContours(threshold,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    # contours=sorted(contours,key=lambda x:cv2.contourArea(x),reverse=True)
-
-    # for cnt in contours:
-    #     (x,y,w,h)=cv2.boundingRect(cnt)
-    #     cv2.rectangle(roi,(x,y),(x+w,y+h),(255,0,0),2)
-    #     cv2.line(roi,(x+int(w/2),0),(x+int(w/2),rows),(0,255,0),2)
-    #     cv2.line(roi,(0,y+int(h/2)),(cols,y+int(h/2)),(0,255,0),2)
-    #     break
